@@ -2,4 +2,4 @@ streamlit
 numpy
 scikit-learn
 joblib
-altair<5
+altair>=4.0,<5.0
