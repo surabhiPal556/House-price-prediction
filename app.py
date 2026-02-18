@@ -1,34 +1,44 @@
 import streamlit as st
-import joblib
 import numpy as np
+from joblib import load   # ✅ fixed import
 
-# Load model
-model = joblib.load("Random_search.pkl")
+# Load model safely
+@st.cache_resource
+def load_model():
+    return load("Random_search.pkl")
 
-st.title("House Price Prediction")
+model = load_model()
+
+# UI
+st.title("🏠 House Price Prediction")
 st.markdown("---")
 
-bedroom = st.number_input("Enter the number of bedroom", min_value=0, value=0)
-bathroom = st.number_input("Enter the number of bathroom", min_value=0, value=0)
-living_area = st.number_input("Enter the living area", min_value=0, value=2000)
+# Inputs
+bedroom = st.number_input("Enter number of bedrooms", min_value=0, value=1)
+bathroom = st.number_input("Enter number of bathrooms", min_value=0, value=1)
+living_area = st.number_input("Enter living area", min_value=0, value=2000)
 condition_of_house = st.number_input("Condition of house", min_value=0, value=3)
-number_of_school = st.number_input("School min value", min_value=0, value=0)
+number_of_school = st.number_input("Number of nearby schools", min_value=0, value=1)
 
 st.markdown("---")
 
-prediction = st.button("Predict")
+# Button
+if st.button("Predict"):
+    try:
+        # Prepare input
+        X_array = np.array([[bedroom, bathroom, living_area, condition_of_house, number_of_school]])
 
-if prediction:
-    # Create input array
-    X_array = np.array([[bedroom, bathroom, living_area, condition_of_house, number_of_school]])
+        # Prediction
+        pred = model.predict(X_array)
 
-    # Predict
-    pred = model.predict(X_array)
+        # Result
+        price = int(pred[0])
 
-    # Extract value from array
-    price = int(pred[0])
+        st.success(f"Estimated House Price = {price}")
 
-    st.write(f"House price = {price}")
+    except Exception as e:
+        st.error("Error in prediction. Please check inputs.")
+        st.write(e)
 
 else:
-    st.write("Please click on the predict button")
+    st.info("Click the Predict button to get house price")
